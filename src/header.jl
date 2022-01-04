@@ -367,20 +367,42 @@ getkey(hdr::FITSHeader, key::String, def) =
 getindex(hdr::FITSHeader, key::String) = hdr.values[hdr.map[key]]
 getindex(hdr::FITSHeader, i::Integer) = hdr.values[i]
 
+"""
+    convert_header_value(value::Any)
+
+Given a value of any type convert it to one of HeaderTypes
+(Nothing, Bool, Float64, Int64, String). If 
+"""
+function convert_header_value(value::Any)
+    @warn "Unsupported header value for $key_or_index of type $(typeof(value))"
+    return string(value)
+end
+convert_header_value(value::Nothing) = value
+convert_header_value(value::Bool) = value
+convert_header_value(value::AbstractFloat) = convert(Float64, value)
+convert_header_value(value::Integer) = convert(Int64, value)
+convert_header_value(value::AbstractString) = convert(String, value)
+
+function setindex!(hdr::FITSHeader, value::Any, key_or_index::Union{String,Integer})
+    val = convert_header_value(value)
+    setindex!(hdr, val, key_or_index)
+end
 function setindex!(hdr::FITSHeader, value::Any, key::String)
     fits_assert_isascii(key)
+    val = convert_header_value(value)
     if in(key, hdr.keys)
-        hdr.values[hdr.map[key]] = value
+        hdr.values[hdr.map[key]] = val
     else
         push!(hdr.keys, key)
-        push!(hdr.values, value)
+        push!(hdr.values, val)
         push!(hdr.comments, "")
         hdr.map[key] = length(hdr.keys)
     end
 end
 
 function setindex!(hdr::FITSHeader, value::Any, i::Integer)
-    hdr.values[i] = value
+    val = convert_header_value(value)
+    hdr.values[i] = val
 end
 
 # Comments

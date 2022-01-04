@@ -210,6 +210,7 @@ function FITS(f::Function, args...; kwargs...)
     end
 end
 
+HeaderTypes = Union{Bool,Int,Float64,Nothing,String}
 
 """
     FITSHeader(keys::Vector{String}, values::Vector, comments::Vector{String})
@@ -228,7 +229,7 @@ append a new HDU to a file.
 """
 mutable struct FITSHeader
     keys::Vector{String}
-    values::Vector{Any}
+    values::Vector{HeaderTypes}
     comments::Vector{String}
     map::Dict{String, Int}
 
@@ -242,7 +243,7 @@ mutable struct FITSHeader
         for i in 1:length(keys)
           map[keys[i]] = i
         end
-        new(keys, Vector{Any}(values), comments, map)
+        new(keys, Vector{HeaderTypes}(values), comments, map)
     end
 end
 
